@@ -1,6 +1,5 @@
 'use strict';
 
-// Uncomment the next lines to use your game instance in the browser
 const Game = require('../modules/Game.class');
 const game = new Game();
 const startButton = document.querySelector('.button');
@@ -10,12 +9,12 @@ const messageStart = document.querySelector(
 );
 const messageWin = document.querySelector('.message-container p:nth-child(2)');
 const messageLose = document.querySelector('.message-container p:nth-child(1)');
+const gameField = document.querySelector('.game-field');
+const SWIPE_THRESHOLD = 30;
+let touchStartX = 0;
+let touchStartY = 0;
 
-// Write your code here
 Game.prototype.getState = function () {
-  // eslint-disable-next-line no-console
-  console.log(this.state);
-
   return this.state;
 };
 
@@ -348,8 +347,6 @@ startButton.addEventListener('click', () => {
   }
 });
 
-window.addEventListener('keydown', checkKeyPressed, false);
-
 function checkKeyPressed(evt) {
   if (evt.key === 'ArrowLeft') {
     game.moveLeft();
@@ -369,3 +366,46 @@ function checkKeyPressed(evt) {
 
   game.fillCells();
 }
+
+window.addEventListener('keydown', checkKeyPressed, false);
+
+gameField.addEventListener(
+  'touchstart',
+  (e) => {
+    const touch = e.touches[0];
+
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  },
+  false,
+);
+
+gameField.addEventListener(
+  'touchend',
+  (e) => {
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) {
+      return;
+    }
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) {
+        game.moveRight();
+      } else {
+        game.moveLeft();
+      }
+    } else {
+      if (dy > 0) {
+        game.moveDown();
+      } else {
+        game.moveUp();
+      }
+    }
+
+    game.fillCells();
+  },
+  false,
+);
